@@ -2,11 +2,9 @@ import axios from "axios";
 
 import { BASE_URL } from "../constants";
 
-export async function getWordInfo(word, cancelToken) {
+export async function getWordInfo(word) {
     return axios
-        .get(`${BASE_URL}/${word}`, {
-            cancelToken: cancelToken,
-        })
+        .get(`${BASE_URL}/${word}`)
         .then((response) => {
             const wordInfo = response.data[0];
             return {
@@ -18,11 +16,7 @@ export async function getWordInfo(word, cancelToken) {
             };
         })
         .catch((err) => {
-            if (axios.isCancel(err)) {
-                console.log("Request cancelled", err.message);
-            } else {
-                console.error(err);
-            }
+            console.error(err);
             return {};
         });
 }

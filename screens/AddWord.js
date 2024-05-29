@@ -10,7 +10,6 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useEffect, useState } from "react";
 import { getWordInfo } from "../services/wordsHandler";
 import { playSound } from "../services/soundHandler";
-import axios from "axios";
 
 const useDebouncedValue = (inputValue, delay) => {
     const [debouncedText, setDebouncedText] = useState(inputValue);
@@ -28,9 +27,7 @@ const useDebouncedValue = (inputValue, delay) => {
 function AddWord({ switchScreen, setWords }) {
     const [info, setInfo] = useState({});
     const [inputValue, setInputValue] = useState("");
-    const [cancelToken, setCancelToken] = useState(null);
     const debouncedInputValue = useDebouncedValue(inputValue, 1000);
-    const { word, phonetics, audio, partOfSpeech, meaning } = info;
 
     const handleInputChange = (value) => {
         setInputValue(value);
@@ -45,16 +42,14 @@ function AddWord({ switchScreen, setWords }) {
     };
 
     useEffect(() => {
-        if (debouncedInputValue) {
-            if (cancelToken) {
-                cancelToken.cancel("Request cancelled because of a new input");
-            }
-            const source = axios.CancelToken.source();
-            setCancelToken(source);
-            getWordInfo(debouncedInputValue, source.token).then((info) => {
+        const fetchWordInfo = async () => {
+            if (debouncedInputValue) {
+                const info = await getWordInfo(debouncedInputValue);
                 setInfo(info);
-            });
-        }
+            }
+        };
+
+        fetchWordInfo();
     }, [debouncedInputValue]);
 
     return (
@@ -83,15 +78,15 @@ function AddWord({ switchScreen, setWords }) {
                         value={inputValue}
                     />
                 </View>
-                {word && (
+                {info?.word && (
                     <>
                         <View style={styles.wordInfo}>
                             <View style={styles.wordInfoRow}>
-                                <Text style={styles.word}>{word}</Text>
-                                {audio && (
+                                <Text style={styles.word}>{info.word}</Text>
+                                {info.audio && (
                                     <Pressable
                                         style={styles.sound}
-                                        onPress={() => playSound(audio)}
+                                        onPress={() => playSound(info.audio)}
                                     >
                                         <Ionicons
                                             name="volume-medium-outline"
@@ -100,18 +95,18 @@ function AddWord({ switchScreen, setWords }) {
                                         />
                                     </Pressable>
                                 )}
-                                {phonetics && (
+                                {info.phonetics && (
                                     <Text style={styles.phonetics}>
-                                        {phonetics}
+                                        {info.phonetics}
                                     </Text>
                                 )}
                             </View>
-                            {partOfSpeech && (
+                            {info.partOfSpeech && (
                                 <Text style={styles.partOfSpeech}>
-                                    {partOfSpeech}
+                                    {info.partOfSpeech}
                                 </Text>
                             )}
-                            <Text>{meaning}</Text>
+                            <Text>{info.meaning}</Text>
                         </View>
                         <Pressable style={styles.btn} onPress={handleAddWord}>
                             <Text style={styles.btnText}>Add</Text>
