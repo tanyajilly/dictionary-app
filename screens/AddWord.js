@@ -31,6 +31,7 @@ function AddWord({ switchScreen, setWords }) {
 
     const handleInputChange = (value) => {
         setInputValue(value);
+        setInfo(null);
     };
 
     const handleAddWord = () => {
